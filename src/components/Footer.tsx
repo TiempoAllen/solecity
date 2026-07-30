@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { AtSign, Shield, Truck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 export function Footer() {
   return (
@@ -20,20 +21,15 @@ export function Footer() {
               Basketball · Clogs. We ship nationwide.
             </p>
             <div className="mt-5 flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                render={
-                  <a
-                    href="https://www.instagram.com/solecity.est23/"
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    aria-label="SOLECITY on Instagram"
-                  />
-                }
+              <a
+                href="https://www.instagram.com/solecity.est23/"
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="SOLECITY on Instagram"
+                className={cn(buttonVariants({ variant: "outline", size: "icon" }))}
               >
                 <AtSign className="size-4" />
-              </Button>
+              </a>
               <span className="text-sm text-muted-foreground">@solecity.est23</span>
             </div>
           </div>
