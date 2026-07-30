@@ -7,10 +7,10 @@ import type { ReactNode } from "react";
 export const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const directionOffset = {
-  up: { y: 28, x: 0 },
-  down: { y: -28, x: 0 },
-  left: { x: 28, y: 0 },
-  right: { x: -28, y: 0 },
+  up: { y: 16, x: 0 },
+  down: { y: -16, x: 0 },
+  left: { x: 16, y: 0 },
+  right: { x: -16, y: 0 },
   none: { x: 0, y: 0 },
 } as const;
 
@@ -36,8 +36,8 @@ export function Reveal({
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, ...offset, filter: "blur(6px)" }}
-      whileInView={{ opacity: 1, x: 0, y: 0, filter: "blur(0px)" }}
+      initial={{ opacity: 0, ...offset }}
+      whileInView={{ opacity: 1, x: 0, y: 0 }}
       viewport={{ once, margin: "-80px" }}
       transition={{ duration, delay, ease: EASE_OUT }}
     >
@@ -55,12 +55,11 @@ export const staggerContainer: Variants = {
 };
 
 export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 26, filter: "blur(6px)" },
+  hidden: { opacity: 0, y: 14 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.65, ease: EASE_OUT },
+    transition: { duration: 0.5, ease: EASE_OUT },
   },
 };
 
