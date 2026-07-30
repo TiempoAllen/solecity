@@ -23,12 +23,18 @@ if (error) {
 }
 
 // handle_new_user trigger already inserted the profile as 'customer'; promote it.
-const { error: upErr } = await admin
+const { data: updated, error: upErr } = await admin
   .from("profiles")
   .update({ role: "admin" })
-  .eq("id", data.user.id);
+  .eq("id", data.user.id)
+  .select("id, role")
+  .maybeSingle();
 if (upErr) {
   console.error("FAIL promoting:", upErr.message);
+  process.exit(1);
+}
+if (!updated || updated.role !== "admin") {
+  console.error("FAIL: profile row not found / role not set for", data.user.id);
   process.exit(1);
 }
 console.log(`Admin created: ${email} (${data.user.id})`);
