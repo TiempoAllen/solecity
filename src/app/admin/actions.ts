@@ -37,3 +37,48 @@ export async function deleteProduct(id: string): Promise<{ ok: boolean; error?: 
   revalidatePath("/admin/products");
   return { ok: true };
 }
+
+export type ProductInput = {
+  id?: string;
+  slug: string;
+  name: string;
+  brand: string;
+  category: string;
+  price: number;
+  original_price: number | null;
+  availability: string;
+  colorway: string;
+  rating: number;
+  reviews: number;
+  authentic: boolean;
+  tagline: string;
+  description: string;
+  sizes: number[];
+  gradient: { from: string; to: string; accent: string };
+  featured: boolean;
+};
+
+export async function saveProduct(
+  input: ProductInput,
+): Promise<{ ok: boolean; error?: string; id?: string }> {
+  if (!(await isAdmin())) return { ok: false, error: "Not authorized." };
+  if (!input.slug || !input.name) return { ok: false, error: "Slug and name are required." };
+
+  const supabase = await createServerSupabaseClient();
+  const row = { ...input };
+  delete (row as { id?: string }).id;
+
+  let result;
+  if (input.id) {
+    result = await supabase.from("products").update(row).eq("id", input.id).select("id").single();
+  } else {
+    result = await supabase.from("products").insert(row).select("id").single();
+  }
+  if (result.error) return { ok: false, error: result.error.message };
+
+  revalidatePath("/products");
+  revalidatePath("/");
+  revalidatePath("/admin/products");
+  if (input.id) revalidatePath(`/products/${input.slug}`);
+  return { ok: true, id: result.data.id };
+}
