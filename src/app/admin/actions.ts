@@ -1,0 +1,106 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { isAdmin } from "@/lib/supabase/auth";
+import type { OrderStatus } from "@/lib/orders";
+import { ORDER_STATUSES } from "@/lib/orders";
+
+export async function signInAdmin(
+  _prev: { error?: string } | undefined,
+  formData: FormData,
+): Promise<{ error?: string }> {
+  const email = String(formData.get("email") ?? "");
+  const password = String(formData.get("password") ?? "");
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) return { error: "Invalid email or password." };
+  if (!(await isAdmin())) {
+    await supabase.auth.signOut();
+    return { error: "This account is not an admin." };
+  }
+  redirect("/admin");
+}
+
+export async function signOutAdmin() {
+  const supabase = await createServerSupabaseClient();
+  await supabase.auth.signOut();
+  redirect("/admin/login");
+}
+
+export async function deleteProduct(id: string): Promise<{ ok: boolean; error?: string }> {
+  if (!(await isAdmin())) return { ok: false, error: "Not authorized." };
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.from("products").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/products");
+  revalidatePath("/");
+  revalidatePath("/admin/products");
+  return { ok: true };
+}
+
+export type ProductInput = {
+  id?: string;
+  slug: string;
+  name: string;
+  brand: string;
+  category: string;
+  price: number;
+  original_price: number | null;
+  availability: string;
+  colorway: string;
+  rating: number;
+  reviews: number;
+  authentic: boolean;
+  tagline: string;
+  description: string;
+  sizes: number[];
+  gradient: { from: string; to: string; accent: string };
+  featured: boolean;
+};
+
+export async function saveProduct(
+  input: ProductInput,
+): Promise<{ ok: boolean; error?: string; id?: string }> {
+  if (!(await isAdmin())) return { ok: false, error: "Not authorized." };
+  if (!input.slug || !input.name) return { ok: false, error: "Slug and name are required." };
+
+  const supabase = await createServerSupabaseClient();
+  const row = { ...input };
+  delete (row as { id?: string }).id;
+
+  let result;
+  if (input.id) {
+    result = await supabase.from("products").update(row).eq("id", input.id).select("id").single();
+  } else {
+    result = await supabase.from("products").insert(row).select("id").single();
+  }
+  if (result.error) return { ok: false, error: result.error.message };
+
+  revalidatePath("/products");
+  revalidatePath("/");
+  revalidatePath("/admin/products");
+  if (input.id) revalidatePath(`/products/${input.slug}`);
+  return { ok: true, id: result.data.id };
+}
+
+export async function updateOrderStatus(
+  id: string,
+  status: OrderStatus,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!(await isAdmin())) return { ok: false, error: "Not authorized." };
+  if (!ORDER_STATUSES.includes(status)) {
+    return { ok: false, error: "Invalid status." };
+  }
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("orders")
+    .update({ status })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${id}`);
+  revalidatePath("/admin");
+  return { ok: true };
+}

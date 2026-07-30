@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { getProducts, getCategories } from "@/lib/products";
 import { ProductsExplorer } from "@/components/products/ProductsExplorer";
 
 export const metadata: Metadata = {
@@ -8,10 +9,13 @@ export const metadata: Metadata = {
     "Browse every authentic pair at SOLECITY — ANTA, Under Armour, basketball shoes and clogs. Filter by category and ship nationwide.",
 };
 
-export default function ProductsPage() {
+export const revalidate = 60;
+
+export default async function ProductsPage() {
+  const [products, categories] = await Promise.all([getProducts(), getCategories()]);
   return (
     <Suspense fallback={<div className="min-h-screen" />}>
-      <ProductsExplorer />
+      <ProductsExplorer products={products} categories={categories} />
     </Suspense>
   );
 }
