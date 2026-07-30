@@ -87,10 +87,11 @@ begin
 
   insert into public.orders (
     order_number, customer_id, contact_name, contact_email, contact_phone,
-    shipping_address, subtotal, total
+    shipping_address, note, subtotal, total
   ) values (
     v_order_number, auth.uid(), btrim(p_contact_name), btrim(p_contact_email),
-    p_contact_phone, coalesce(p_shipping_address, '{}'::jsonb), 0, 0
+    p_contact_phone, coalesce(p_shipping_address, '{}'::jsonb),
+    nullif(btrim(p_note), ''), 0, 0
   ) returning id into v_order_id;
 
   for v_item in select * from jsonb_array_elements(p_items) loop
