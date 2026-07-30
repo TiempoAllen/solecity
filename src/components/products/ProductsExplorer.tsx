@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { products, categories, type Category } from "@/lib/products";
+import type { Product, Category } from "@/lib/products";
 import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +17,11 @@ import { Reveal } from "@/components/motion/Reveal";
 type Filter = Category | "All";
 type Sort = "featured" | "low" | "high";
 
+type Props = {
+  products: Product[];
+  categories: Array<{ label: Filter; count: number }>;
+};
+
 const isFilter = (v: string | null): v is Filter =>
   v === "All" || v === "ANTA" || v === "Basketball" || v === "Under Armour" || v === "Clogs";
 
@@ -26,7 +31,7 @@ const sortLabels: Record<Sort, string> = {
   high: "Price: High to Low",
 };
 
-export function ProductsExplorer() {
+export function ProductsExplorer({ products, categories }: Props) {
   const params = useSearchParams();
   const initial = params.get("category");
   const [active, setActive] = useState<Filter>(isFilter(initial) ? initial : "All");
@@ -38,7 +43,7 @@ export function ProductsExplorer() {
     if (sort === "low") list.sort((a, b) => a.price - b.price);
     if (sort === "high") list.sort((a, b) => b.price - a.price);
     return list;
-  }, [active, sort]);
+  }, [active, sort, products]);
 
   return (
     <section className="mx-auto max-w-6xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16">

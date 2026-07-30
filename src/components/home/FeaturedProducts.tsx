@@ -4,8 +4,8 @@ import { getFeatured } from "@/lib/products";
 import { ProductCard } from "@/components/ProductCard";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
 
-export function FeaturedProducts() {
-  const featured = getFeatured();
+export async function FeaturedProducts() {
+  const featured = await getFeatured();
 
   return (
     <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-6">
