@@ -2,20 +2,25 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { ArrowRight, Shield, Star, Truck, Zap } from "lucide-react";
 import type { Product } from "@/lib/products";
 import { ShoeArt } from "@/components/ShoeArt";
 import { ProductCard } from "@/components/ProductCard";
-import { GlassBadge } from "@/components/ui/Glass";
-import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import {
-  StarIcon,
-  ShieldIcon,
-  TruckIcon,
-  BoltIcon,
-  CheckIcon,
-  ArrowIcon,
-} from "@/components/icons";
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
 import { useCart } from "@/context/CartContext";
 import { formatPHP } from "@/lib/utils";
 
@@ -28,7 +33,6 @@ export function ProductDetail({
 }) {
   const { add } = useCart();
   const [size, setSize] = useState<number | null>(null);
-  const [added, setAdded] = useState(false);
   const [shake, setShake] = useState(false);
 
   function handleAdd() {
@@ -38,72 +42,52 @@ export function ProductDetail({
       return;
     }
     add(product, size);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1600);
+    toast.success("Added to bag", { description: `${product.name} · US ${size}` });
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-32 sm:px-6 sm:pt-36">
-      {/* Breadcrumb */}
-      <motion.nav
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="mb-8 flex items-center gap-2 text-sm text-faint"
-      >
-        <Link href="/" className="transition-colors hover:text-white">
-          Home
-        </Link>
-        <span>/</span>
-        <Link href="/products" className="transition-colors hover:text-white">
-          Shop
-        </Link>
-        <span>/</span>
-        <span className="text-muted">{product.name}</span>
-      </motion.nav>
+    <div className="mx-auto max-w-6xl px-4 pt-8 pb-24 sm:px-6 sm:pt-12">
+      <Breadcrumb className="mb-8">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/" />}>Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/products" />}>Shop</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{product.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       <div className="grid gap-10 lg:grid-cols-2">
         {/* Gallery */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.94 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="lg:sticky lg:top-28 lg:self-start"
-        >
-          <div className="glass-strong glass-specular relative aspect-square overflow-hidden rounded-[2.5rem] p-10">
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `radial-gradient(120% 120% at 30% 15%, ${product.gradient.from}55, transparent 55%), radial-gradient(120% 120% at 85% 90%, ${product.gradient.to}55, transparent 55%)`,
-              }}
-            />
-            <div className="relative grid h-full place-items-center">
+        <div className="lg:sticky lg:top-24 lg:self-start">
+          <Card className="relative aspect-square gap-0 overflow-hidden bg-muted p-10">
+            <div className="grid h-full place-items-center">
               <ShoeArt
                 seed={`detail-${product.slug}`}
                 from={product.gradient.from}
                 to={product.gradient.to}
                 accent={product.gradient.accent}
                 float
-                className="drop-shadow-[0_35px_45px_rgba(0,0,0,0.55)]"
               />
             </div>
             {product.originalPrice && (
-              <span className="absolute right-6 top-6 rounded-full bg-gradient-to-r from-[--color-brand] to-[--color-brand-2] px-3 py-1.5 text-xs font-bold text-white">
-                SAVE {formatPHP(product.originalPrice - product.price)}
-              </span>
+              <Badge className="absolute top-4 right-4">
+                Save {formatPHP(product.originalPrice - product.price)}
+              </Badge>
             )}
-          </div>
+          </Card>
           <div className="mt-4 grid grid-cols-3 gap-4">
             {["Side", "Top", "Sole"].map((view, i) => (
-              <div
+              <Card
                 key={view}
-                className="glass relative grid aspect-square place-items-center overflow-hidden rounded-2xl"
+                className="relative grid aspect-square place-items-center gap-0 overflow-hidden bg-muted p-4"
               >
-                <div
-                  className="absolute inset-0 opacity-60"
-                  style={{
-                    background: `linear-gradient(135deg, ${product.gradient.from}33, ${product.gradient.to}33)`,
-                  }}
-                />
                 <ShoeArt
                   seed={`thumb-${product.slug}-${i}`}
                   from={product.gradient.from}
@@ -111,159 +95,124 @@ export function ProductDetail({
                   accent={product.gradient.accent}
                   className="scale-90"
                 />
-                <span className="absolute bottom-1.5 right-2 text-[10px] uppercase tracking-wide text-faint">
+                <span className="absolute right-2 bottom-1.5 text-[10px] tracking-wide text-muted-foreground uppercase">
                   {view}
                 </span>
-              </div>
+              </Card>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* Info */}
-        <div>
-          <Stagger className="space-y-5">
-            <StaggerItem>
-              <div className="flex flex-wrap items-center gap-2">
-                <GlassBadge>{product.availability}</GlassBadge>
-                {product.authentic && (
-                  <GlassBadge className="text-[--color-brand-3]">
-                    <ShieldIcon className="h-3.5 w-3.5" /> Authentic
-                  </GlassBadge>
-                )}
-                <span className="flex items-center gap-1 text-sm text-muted">
-                  <StarIcon className="h-4 w-4 text-[--color-brand-3]" />
-                  {product.rating.toFixed(1)}
-                  <span className="text-faint">({product.reviews})</span>
+        <Stagger className="space-y-5">
+          <StaggerItem>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">{product.availability}</Badge>
+              {product.authentic && (
+                <Badge variant="outline" className="gap-1">
+                  <Shield className="size-3.5" /> Authentic
+                </Badge>
+              )}
+              <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Star className="size-4 fill-current" />
+                {product.rating.toFixed(1)}
+                <span>({product.reviews})</span>
+              </span>
+            </div>
+          </StaggerItem>
+
+          <StaggerItem>
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              {product.brand} · {product.category}
+            </p>
+            <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
+              {product.name}
+            </h1>
+            <p className="mt-2 text-muted-foreground">{product.colorway}</p>
+          </StaggerItem>
+
+          <StaggerItem>
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl font-bold">{formatPHP(product.price)}</span>
+              {product.originalPrice && (
+                <span className="text-lg text-muted-foreground line-through">
+                  {formatPHP(product.originalPrice)}
                 </span>
-              </div>
-            </StaggerItem>
+              )}
+            </div>
+          </StaggerItem>
 
-            <StaggerItem>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-faint">
-                {product.brand} · {product.category}
-              </p>
-              <h1 className="mt-2 text-4xl font-black leading-tight tracking-tight sm:text-5xl">
-                {product.name}
-              </h1>
-              <p className="mt-2 text-muted">{product.colorway}</p>
-            </StaggerItem>
+          <StaggerItem>
+            <p className="max-w-lg leading-relaxed text-muted-foreground">
+              {product.description}
+            </p>
+          </StaggerItem>
 
-            <StaggerItem>
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-black text-white">{formatPHP(product.price)}</span>
-                {product.originalPrice && (
-                  <span className="text-lg text-faint line-through">
-                    {formatPHP(product.originalPrice)}
-                  </span>
+          <StaggerItem>
+            <Separator />
+          </StaggerItem>
+
+          {/* Size selector */}
+          <StaggerItem>
+            <motion.div
+              animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : {}}
+              transition={{ duration: 0.45 }}
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Select size (US)</p>
+                {size === null && shake && (
+                  <span className="text-xs text-destructive">Pick a size first</span>
                 )}
               </div>
-            </StaggerItem>
-
-            <StaggerItem>
-              <p className="max-w-lg leading-relaxed text-muted">{product.description}</p>
-            </StaggerItem>
-
-            {/* Size selector */}
-            <StaggerItem>
-              <motion.div
-                animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : {}}
-                transition={{ duration: 0.45 }}
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-white">Select size (US)</p>
-                  {size === null && shake && (
-                    <span className="text-xs text-[--color-brand-3]">Pick a size first</span>
-                  )}
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {product.sizes.map((s) => {
-                    const on = size === s;
-                    return (
-                      <button
-                        key={s}
-                        onClick={() => setSize(s)}
-                        className={`relative h-11 w-14 rounded-xl text-sm font-semibold transition-glass ${
-                          on
-                            ? "text-white"
-                            : "glass text-muted hover:bg-white/10 hover:text-white"
-                        }`}
-                      >
-                        {on && (
-                          <motion.span
-                            layoutId="size-pill"
-                            className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-br from-[--color-brand] to-[--color-brand-2]"
-                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                          />
-                        )}
-                        {s}
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            </StaggerItem>
-
-            {/* Add to cart */}
-            <StaggerItem>
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={handleAdd}
-                className="group relative mt-2 flex w-full items-center justify-center gap-2 overflow-hidden rounded-full px-8 py-4 text-base font-bold text-white shadow-[0_14px_44px_-10px_var(--color-accent-glow)]"
-              >
-                <span className="absolute inset-0 -z-10 bg-gradient-to-r from-[--color-brand] via-[--color-brand-3] to-[--color-brand-2] transition-transform duration-500 group-hover:scale-105" />
-                <AnimatePresence mode="wait" initial={false}>
-                  {added ? (
-                    <motion.span
-                      key="added"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="flex items-center gap-2"
-                    >
-                      <CheckIcon className="h-5 w-5" /> Added to bag
-                    </motion.span>
-                  ) : (
-                    <motion.span
-                      key="add"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="flex items-center gap-2"
-                    >
-                      Add to bag · {formatPHP(product.price)}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </motion.button>
-            </StaggerItem>
-
-            {/* Assurances */}
-            <StaggerItem>
-              <ul className="mt-2 grid gap-3 sm:grid-cols-3">
-                {[
-                  { icon: ShieldIcon, label: "100% Authentic" },
-                  { icon: TruckIcon, label: "Ships nationwide" },
-                  { icon: BoltIcon, label: "Secure checkout" },
-                ].map((a) => (
-                  <li
-                    key={a.label}
-                    className="glass flex items-center gap-2 rounded-2xl px-3 py-3 text-xs font-medium text-muted"
+              <div className="mt-3 flex flex-wrap gap-2">
+                {product.sizes.map((s) => (
+                  <Button
+                    key={s}
+                    variant={size === s ? "default" : "outline"}
+                    size="sm"
+                    className="w-14"
+                    onClick={() => setSize(s)}
                   >
-                    <a.icon className="h-4 w-4 shrink-0 text-[--color-brand-3]" />
-                    {a.label}
-                  </li>
+                    {s}
+                  </Button>
                 ))}
-              </ul>
-            </StaggerItem>
-          </Stagger>
-        </div>
+              </div>
+            </motion.div>
+          </StaggerItem>
+
+          {/* Add to cart */}
+          <StaggerItem>
+            <Button size="lg" className="w-full" onClick={handleAdd}>
+              Add to bag · {formatPHP(product.price)}
+            </Button>
+          </StaggerItem>
+
+          {/* Assurances */}
+          <StaggerItem>
+            <ul className="grid gap-3 sm:grid-cols-3">
+              {[
+                { icon: Shield, label: "100% Authentic" },
+                { icon: Truck, label: "Ships nationwide" },
+                { icon: Zap, label: "Secure checkout" },
+              ].map((a) => (
+                <li
+                  key={a.label}
+                  className="flex items-center gap-2 rounded-lg border px-3 py-3 text-xs font-medium text-muted-foreground"
+                >
+                  <a.icon className="size-4 shrink-0" />
+                  {a.label}
+                </li>
+              ))}
+            </ul>
+          </StaggerItem>
+        </Stagger>
       </div>
 
       {/* Related */}
       {related.length > 0 && (
-        <section className="mt-28">
+        <section className="mt-24">
           <Reveal>
-            <h2 className="text-2xl font-black tracking-tight sm:text-3xl">You may also like</h2>
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">You may also like</h2>
           </Reveal>
           <Stagger className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((p) => (
@@ -275,10 +224,10 @@ export function ProductDetail({
           <Reveal className="mt-10 text-center">
             <Link
               href="/products"
-              className="group inline-flex items-center gap-2 text-sm font-semibold text-muted transition-colors hover:text-white"
+              className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Back to all pairs
-              <ArrowIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </Reveal>
         </section>
