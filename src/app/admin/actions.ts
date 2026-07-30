@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/supabase/auth";
+import type { OrderStatus } from "@/lib/orders";
+import { ORDER_STATUSES } from "@/lib/orders";
 
 export async function signInAdmin(
   _prev: { error?: string } | undefined,
@@ -81,4 +83,24 @@ export async function saveProduct(
   revalidatePath("/admin/products");
   if (input.id) revalidatePath(`/products/${input.slug}`);
   return { ok: true, id: result.data.id };
+}
+
+export async function updateOrderStatus(
+  id: string,
+  status: OrderStatus,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!(await isAdmin())) return { ok: false, error: "Not authorized." };
+  if (!ORDER_STATUSES.includes(status)) {
+    return { ok: false, error: "Invalid status." };
+  }
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase
+    .from("orders")
+    .update({ status })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${id}`);
+  revalidatePath("/admin");
+  return { ok: true };
 }
