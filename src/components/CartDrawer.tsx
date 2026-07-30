@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { Minus, Plus, ShoppingBag, Truck, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { ShoeArt } from "@/components/ShoeArt";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -14,7 +15,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { formatPHP } from "@/lib/utils";
+import { cn, formatPHP } from "@/lib/utils";
 
 const SHIPPING_THRESHOLD = 5000;
 
@@ -159,7 +160,13 @@ export function CartDrawer() {
             <p className="text-xs text-muted-foreground">
               Taxes calculated at checkout · Ships nationwide from Cebu City
             </p>
-            <Button className="w-full">Checkout · {formatPHP(subtotal)}</Button>
+            <Link
+              href="/checkout"
+              onClick={close}
+              className={cn(buttonVariants(), "w-full")}
+            >
+              Checkout · {formatPHP(subtotal)}
+            </Link>
             <Button variant="ghost" size="sm" onClick={clear}>
               Clear bag
             </Button>
