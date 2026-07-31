@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 export function useSupabaseUser(): string | null {
   const [email, setEmail] = useState<string | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
 
-    supabase.auth.getUser().then(({ data }) => {
-      setEmail(data.user?.email ?? null);
+    supabase.auth.getSession().then(({ data }) => {
+      setEmail(data.session?.user.email ?? null);
     });
 
     const {
@@ -20,7 +22,7 @@ export function useSupabaseUser(): string | null {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [pathname]);
 
   return email;
 }

@@ -29,6 +29,10 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
+  // NOTE: this only blocks anonymous requests. Since customers can now hold
+  // sessions too (Phase 3), this branch no longer implies "is an admin" —
+  // role enforcement happens in requireAdmin() (admin/(protected)/layout.tsx)
+  // and isAdmin() (re-checked in every admin Server Action).
   const isAdminLogin = path === "/admin/login";
   if (path.startsWith("/admin") && !isAdminLogin && !user) {
     const url = request.nextUrl.clone();

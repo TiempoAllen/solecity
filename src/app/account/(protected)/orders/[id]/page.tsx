@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { fetchOrderById } from "@/lib/orders";
+import { requireCustomer } from "@/lib/supabase/auth";
 import { ShoeArt } from "@/components/ShoeArt";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -14,8 +15,9 @@ export default async function AccountOrderDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const user = await requireCustomer();
   const supabase = await createServerSupabaseClient();
-  const order = await fetchOrderById(supabase, id);
+  const order = await fetchOrderById(supabase, id, user.id);
   if (!order) notFound();
 
   const addr = order.shippingAddress;

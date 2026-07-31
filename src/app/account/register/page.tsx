@@ -23,6 +23,7 @@ export default function AccountRegisterPage() {
               name="fullName"
               type="text"
               required
+              defaultValue={state?.fullName ?? ""}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm"
             />
           </div>
@@ -35,6 +36,7 @@ export default function AccountRegisterPage() {
               name="email"
               type="email"
               required
+              defaultValue={state?.email ?? ""}
               className="w-full rounded-md border bg-background px-3 py-2 text-sm"
             />
           </div>

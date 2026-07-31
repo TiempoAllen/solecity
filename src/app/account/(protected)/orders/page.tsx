@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { fetchOrders } from "@/lib/orders";
+import { requireCustomer } from "@/lib/supabase/auth";
 import { buttonVariants } from "@/components/ui/button";
 import { cn, formatPHP } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function AccountOrdersPage() {
+  const user = await requireCustomer();
   const supabase = await createServerSupabaseClient();
-  const orders = await fetchOrders(supabase);
+  const orders = await fetchOrders(supabase, undefined, user.id);
 
   return (
     <div>

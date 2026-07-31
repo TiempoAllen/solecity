@@ -107,12 +107,14 @@ const ITEM_COLUMNS =
 export async function fetchOrders(
   supabase: SupabaseClient,
   status?: OrderStatus,
+  customerId?: string,
 ): Promise<Order[]> {
   let query = supabase
     .from("orders")
     .select(ORDER_COLUMNS)
     .order("created_at", { ascending: false });
   if (status) query = query.eq("status", status);
+  if (customerId) query = query.eq("customer_id", customerId);
   const { data, error } = await query;
   if (error || !data) return [];
   return (data as OrderRow[]).map(mapOrder);
@@ -121,12 +123,14 @@ export async function fetchOrders(
 export async function fetchOrderById(
   supabase: SupabaseClient,
   id: string,
+  customerId?: string,
 ): Promise<OrderWithItems | null> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("orders")
     .select(`${ORDER_COLUMNS}, order_items(${ITEM_COLUMNS})`)
-    .eq("id", id)
-    .maybeSingle();
+    .eq("id", id);
+  if (customerId) query = query.eq("customer_id", customerId);
+  const { data, error } = await query.maybeSingle();
   if (error || !data) return null;
   const { order_items, ...order } = data as OrderRow & {
     order_items: OrderItemRow[];
