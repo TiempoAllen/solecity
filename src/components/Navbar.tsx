@@ -24,6 +24,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { SearchBar } from "@/components/SearchBar";
 import { ModeToggle } from "@/components/ModeToggle";
 
 const categories = [
@@ -85,6 +86,8 @@ export function Navbar() {
           </NavigationMenu>
         </div>
 
+        <SearchBar className="mx-6 hidden w-full max-w-xs md:block" />
+
         <div className="flex items-center gap-1">
           <ModeToggle />
 
@@ -137,6 +140,10 @@ export function Navbar() {
               <SheetHeader>
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
+              <SearchBar
+                className="px-2"
+                onSubmit={() => setMenuOpen(false)}
+              />
               <ul className="flex flex-col px-2">
                 {mobileLinks.map((link) => (
                   <li key={link.href}>

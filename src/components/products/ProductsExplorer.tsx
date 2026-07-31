@@ -34,16 +34,24 @@ const sortLabels: Record<Sort, string> = {
 export function ProductsExplorer({ products, categories }: Props) {
   const params = useSearchParams();
   const initial = params.get("category");
+  const query = (params.get("search") ?? "").trim().toLowerCase();
   const [active, setActive] = useState<Filter>(isFilter(initial) ? initial : "All");
   const [sort, setSort] = useState<Sort>("featured");
 
   const visible = useMemo(() => {
     let list = active === "All" ? products : products.filter((p) => p.category === active);
+    if (query) {
+      list = list.filter((p) =>
+        [p.name, p.brand, p.colorway].some((field) =>
+          field.toLowerCase().includes(query),
+        ),
+      );
+    }
     list = [...list];
     if (sort === "low") list.sort((a, b) => a.price - b.price);
     if (sort === "high") list.sort((a, b) => b.price - a.price);
     return list;
-  }, [active, sort, products]);
+  }, [active, sort, products, query]);
 
   return (
     <section className="mx-auto max-w-6xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16">
@@ -51,8 +59,20 @@ export function ProductsExplorer({ products, categories }: Props) {
         <p className="text-sm text-muted-foreground">The collection</p>
         <h1 className="mt-1 text-4xl font-bold tracking-tight sm:text-5xl">All SOLECITY pairs</h1>
         <p className="mt-3 max-w-md text-muted-foreground">
-          {visible.length} authentic {visible.length === 1 ? "pair" : "pairs"} ready to ship
-          nationwide.
+          {query ? (
+            <>
+              {visible.length} {visible.length === 1 ? "result" : "results"} for{" "}
+              <span className="font-medium text-foreground">
+                &ldquo;{query}&rdquo;
+              </span>
+              .
+            </>
+          ) : (
+            <>
+              {visible.length} authentic {visible.length === 1 ? "pair" : "pairs"} ready to
+              ship nationwide.
+            </>
+          )}
         </p>
       </Reveal>
 
