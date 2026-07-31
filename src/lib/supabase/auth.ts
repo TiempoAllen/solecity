@@ -27,3 +27,10 @@ export async function isAdmin() {
 export async function requireAdmin() {
   if (!(await isAdmin())) redirect("/admin/login");
 }
+
+// Use at the top of customer-account server components.
+export async function requireCustomer() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/account/login");
+  return user;
+}
