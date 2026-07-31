@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, ShoppingBag } from "lucide-react";
+import { Menu, ShoppingBag, User } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useSupabaseUser } from "@/hooks/useSupabaseUser";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
@@ -27,6 +28,7 @@ const links = [
 
 export function Navbar() {
   const { count, open } = useCart();
+  const userEmail = useSupabaseUser();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -63,6 +65,13 @@ export function Navbar() {
 
         <div className="flex items-center gap-1">
           <ModeToggle />
+          <Link
+            href={userEmail ? "/account/orders" : "/account/login"}
+            aria-label={userEmail ? "My account" : "Sign in"}
+            className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+          >
+            <User className="size-5" />
+          </Link>
 
           <Button
             variant="ghost"
@@ -108,6 +117,15 @@ export function Navbar() {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <Link
+                    href={userEmail ? "/account/orders" : "/account/login"}
+                    onClick={() => setMenuOpen(false)}
+                    className="block rounded-md px-3 py-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    {userEmail ? "My account" : "Sign in"}
+                  </Link>
+                </li>
               </ul>
             </SheetContent>
           </Sheet>
