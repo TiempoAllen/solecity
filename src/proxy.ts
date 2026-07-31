@@ -28,10 +28,18 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isLogin = path === "/admin/login";
-  if (path.startsWith("/admin") && !isLogin && !user) {
+
+  const isAdminLogin = path === "/admin/login";
+  if (path.startsWith("/admin") && !isAdminLogin && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
+    return NextResponse.redirect(url);
+  }
+
+  const isAccountAuthPage = path === "/account/login" || path === "/account/register";
+  if (path.startsWith("/account") && !isAccountAuthPage && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/account/login";
     return NextResponse.redirect(url);
   }
 
@@ -39,5 +47,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/account/:path*"],
 };
