@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, ShoppingBag, User } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -16,62 +15,78 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 import { ModeToggle } from "@/components/ModeToggle";
 
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/products", label: "Shop" },
+const categories = [
   { href: "/products?category=ANTA", label: "ANTA" },
   { href: "/products?category=Basketball", label: "Basketball" },
   { href: "/products?category=Clogs", label: "Clogs" },
 ];
 
+// Flat link list for the mobile menu (Shop + each category).
+const mobileLinks = [{ href: "/products", label: "Shop" }, ...categories];
+
 export function Navbar() {
   const { count, open } = useCart();
   const userEmail = useSupabaseUser();
-  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
-            S
-          </span>
-          <span className="text-lg font-bold tracking-tight">SOLECITY</span>
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-2.5">
+            <span className="grid size-8 place-items-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
+              S
+            </span>
+            <span className="text-lg font-bold tracking-tight">SOLECITY</span>
+          </Link>
 
-        <ul className="hidden items-center gap-1 md:flex">
-          {links.map((link) => {
-            const active = link.href === pathname;
-            return (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className={cn(
-                    "rounded-md px-3 py-2 text-sm transition-colors",
-                    active
-                      ? "font-medium text-foreground"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
+          <NavigationMenu className="hidden md:flex">
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  render={<Link href="/products" />}
+                  className={navigationMenuTriggerStyle}
                 >
-                  {link.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                  Shop
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[420px] grid-cols-2 gap-1">
+                    {categories.map((category) => (
+                      <li key={category.href}>
+                        <NavigationMenuLink render={<Link href={category.href} />}>
+                          <span className="font-medium text-foreground">
+                            {category.label}
+                          </span>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Explore the {category.label} category
+                          </p>
+                        </NavigationMenuLink>
+                      </li>
+                    ))}
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
 
         <div className="flex items-center gap-1">
           <ModeToggle />
-          <Link
-            href={userEmail ? "/account/orders" : "/account/login"}
-            aria-label={userEmail ? "My account" : "Sign in"}
-            className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
-          >
-            <User className="size-5" />
-          </Link>
 
           <Button
             variant="ghost"
@@ -87,6 +102,23 @@ export function Navbar() {
               </Badge>
             )}
           </Button>
+
+          {userEmail ? (
+            <Link
+              href="/account/orders"
+              aria-label="My account"
+              className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+            >
+              <User className="size-5" />
+            </Link>
+          ) : (
+            <Link
+              href="/account/login"
+              className={cn(buttonVariants({ size: "sm" }), "hidden md:inline-flex")}
+            >
+              Sign in
+            </Link>
+          )}
 
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger
@@ -106,7 +138,7 @@ export function Navbar() {
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <ul className="flex flex-col px-2">
-                {links.map((link) => (
+                {mobileLinks.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
@@ -117,15 +149,27 @@ export function Navbar() {
                     </Link>
                   </li>
                 ))}
-                <li>
-                  <Link
-                    href={userEmail ? "/account/orders" : "/account/login"}
-                    onClick={() => setMenuOpen(false)}
-                    className="block rounded-md px-3 py-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  >
-                    {userEmail ? "My account" : "Sign in"}
-                  </Link>
-                </li>
+                {userEmail ? (
+                  <li>
+                    <Link
+                      href="/account/orders"
+                      onClick={() => setMenuOpen(false)}
+                      className="block rounded-md px-3 py-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      My account
+                    </Link>
+                  </li>
+                ) : (
+                  <li>
+                    <Link
+                      href="/account/login"
+                      onClick={() => setMenuOpen(false)}
+                      className="block rounded-md px-3 py-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      Sign in
+                    </Link>
+                  </li>
+                )}
               </ul>
             </SheetContent>
           </Sheet>
